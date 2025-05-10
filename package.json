@@ -11,14 +11,31 @@
     "init-db": "node scripts/runSQLScript.js"
   },
   "dependencies": {
+    "audit": "^0.0.6",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.10",
-    "express": "^4.17.1",
+    "express": "^4.21.2",
+    "fix": "^0.0.6",
+    "npm": "^11.3.0",
     "pg": "^8.7.1"
   },
   "devDependencies": {
     "jest": "^27.0.6",
     "nodemon": "^2.0.22",
     "supertest": "^6.1.3"
-  }
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brenofgsilva/reservago.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brenofgsilva/reservago/issues"
+  },
+  "homepage": "https://github.com/brenofgsilva/reservago#readme"
 }
