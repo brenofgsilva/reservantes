@@ -118,7 +118,6 @@ Figura 2: Arquitetura da aplicação
 
 ![Arquitetura MVC do Projeto](./assets/assetsWAD/arqMVC.png)
 
-![Diagrama que apresenta a arquitetura da aplicação web Reservantes utilizando o padrão MVC. O diagrama mostra a separação entre as camadas Model, View e Controller. A camada Model gerencia dados e regras de negócio, a camada View cuida da interface e apresentação ao usuário, e a camada Controller processa entradas do usuário e faz a mediação entre Model e View. Setas indicam o fluxo de informações entre esses componentes. O ambiente é limpo e técnico, com ênfase em clareza e estrutura. Não há textos adicionais na imagem. O tom é neutro e informativo.]
 
 </div>
 
