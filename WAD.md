@@ -112,15 +112,15 @@ _Descreva aqui os Models implementados no sistema web_
 
 ### 3.2. Arquitetura (Semana 5)
 
-_Posicione aqui o diagrama de arquitetura da sua solução de aplicação web. Atualize sempre que necessário._
+<div style ="text-align: center">
 
-**Instruções para criação do diagrama de arquitetura**
+Figura 2: Arquitetura da aplicação
 
-- **Model**: A camada que lida com a lógica de negócios e interage com o banco de dados.
-- **View**: A camada responsável pela interface de usuário.
-- **Controller**: A camada que recebe as requisições, processa as ações e atualiza o modelo e a visualização.
+![Arquitetura MVC do Projeto](./assets/assetsWAD/arqMVC.png)
 
-_Adicione as setas e explicações sobre como os dados fluem entre o Model, Controller e View._
+![Diagrama que apresenta a arquitetura da aplicação web Reservantes utilizando o padrão MVC. O diagrama mostra a separação entre as camadas Model, View e Controller. A camada Model gerencia dados e regras de negócio, a camada View cuida da interface e apresentação ao usuário, e a camada Controller processa entradas do usuário e faz a mediação entre Model e View. Setas indicam o fluxo de informações entre esses componentes. O ambiente é limpo e técnico, com ênfase em clareza e estrutura. Não há textos adicionais na imagem. O tom é neutro e informativo.]
+
+</div>
 
 ### 3.3. Wireframes (Semana 03 - opcional)
 

@@ -35,18 +35,27 @@ _Coloque aqui o link para seu projeto publicado e link para vídeo de demonstra�
 Dentre os arquivos e pastas presentes na raiz do projeto, definem-se:
 
 ```
-│
-├── config/                # Arquivos de configuração (ex: conexão com banco)
-│   └── database.js
-├── controllers/           # Lógica de controle das requisições
-│   └── HomeController.js
-├── models/                # Definição de modelos de dados (estrutura do banco)
-│   └── User.js
-├── routes/                # Definição das rotas do sistema
-│   └── index.js
+.
+├── assets/                # Arquivos públicos, imagens e recursos auxiliares
+│   └── assetsWAD/         # Imagens específicas do projeto/documentação
+│       ├── arqMVC.png     # Arquitetura MVC em imagem
+│       └── DBdiagram.png  # Diagrama do banco de dados
+├── config/                # Arquivos de configuração do projeto
+│   └── database.js        # Configuração da conexão com PostgreSQL (Supabase ou Render)
+├── controllers/           # Camada de lógica de negócio (controllers da API)
+│   ├── AppUserController.js
+│   ├── EventController.js
+│   ├── ReservationController.js
+│   ├── RestaurantController.js
+│   ├── TableEntityController.js
+│   └── userController.js
+├── models/
+├── routes/                # Arquivos de definição de rotas HTTP
+│   ├── frontRoutes.js
+│   ├── index.js
+│   └── userRoutes.js
 ├── services/              # Serviços auxiliares do sistema
 │   └── userService.js
-├── assets/                # Arquivos públicos como imagens e fontes
 ├── scripts/               # Arquivos de JavaScript públicos
 ├── styles/                # Arquivos CSS públicos
 ├── tests/                 # Arquivos de testes unitários
