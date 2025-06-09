@@ -87,10 +87,10 @@ npm install
 Isso instalará todas as dependências definidas no arquivo <b>package.json</b> que são necessárias para rodar o projeto. Agora o projeto já está pronto para ser modificado. Caso ainda deseje iniciar a aplicação, digite o comando abaixo no terminal:
 
 ```sh
-npm start
+npm run init-db
 ```
 
-5. Agora você pode acessar a aplicação através do link http://localhost:1234/
+5. Agora você pode acessar a aplicação através do link http://localhost:3000
 6. O servidor está online.
 
 ## 🗃 Histórico de lançamentos
@@ -98,7 +98,7 @@ npm start
 - ## 0.5.0 - XX/XX/2024
 - ## 0.4.0 - XX/XX/2024
 - ## 0.3.0 - XX/XX/2024
-- ## 0.2.0 - XX/XX/2024
+- ## 0.2.0 - 25/05/2025 - Segundo rascunho da Aplicação Web.
 - ## 0.1.0 - 09/05/2025 - Primeiro rascunho da Aplicação Web.
 
 ## 📋 Licença/License
