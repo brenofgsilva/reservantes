@@ -118,7 +118,6 @@ Figura 2: Arquitetura da aplicação
 
 ![Arquitetura MVC do Projeto](./assets/assetsWAD/arqMVC.png)
 
-
 </div>
 
 ### 3.3. Wireframes (Semana 03 - opcional)
