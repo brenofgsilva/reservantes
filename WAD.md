@@ -136,11 +136,326 @@ _Posicione aqui algumas imagens demonstrativas de seu protótipo de alta fidelid
 
 _Utilize um link para outra página de documentação contendo a descrição completa de cada endpoint. Ou descreva aqui cada endpoint criado para seu sistema._
 
+# Endpoints da API - Sistema Reservantes
+
+O sistema Reservantes possui uma API REST completa para gerenciamento de reservas de restaurantes. Todos os endpoints seguem o padrão CRUD (Create, Read, Update, Delete) e retornam dados em formato JSON.
+
+## Base URL
+
+```
+http://localhost:3000/api
+```
+
+## 1. Restaurantes
+
+### `GET /api/restaurantes`
+
+**Descrição:** Lista todos os restaurantes cadastrados no sistema.
+**Método:** GET
+**Parâmetros:** Nenhum
+**Retorno:** Array de objetos restaurante
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Restaurante Exemplo",
+    "description": "Descrição do restaurante",
+    "location": "Endereço do restaurante",
+    "contact_info": "Telefone ou email",
+    "owner_id": 123
+  }
+]
+```
+
+### `POST /api/restaurantes`
+
+**Descrição:** Cria um novo restaurante.
+**Método:** POST
+**Body:**
+
+```json
+{
+  "name": "Nome do Restaurante",
+  "description": "Descrição opcional",
+  "location": "Localização",
+  "contact_info": "Informações de contato",
+  "owner_id": 123
+}
+```
+
+**Retorno:** Objeto do restaurante criado
+
+### `PUT /api/restaurantes/:id`
+
+**Descrição:** Atualiza um restaurante existente.
+**Método:** PUT
+**Parâmetros:** `id` - ID do restaurante
+**Body:** Mesmo formato do POST
+**Retorno:** Objeto do restaurante atualizado
+
+### `DELETE /api/restaurantes/:id`
+
+**Descrição:** Remove um restaurante do sistema.
+**Método:** DELETE
+**Parâmetros:** `id` - ID do restaurante
+**Retorno:** Mensagem de confirmação
+
+## 2. Eventos
+
+### `GET /api/eventos`
+
+**Descrição:** Lista todos os eventos cadastrados.
+**Método:** GET
+**Retorno:** Array de objetos evento
+
+```json
+[
+  {
+    "id": 1,
+    "restaurant_id": 1,
+    "title": "Jantar Especial",
+    "description": "Evento especial de jantar",
+    "date_time": "2025-12-31T20:00:00Z",
+    "capacity": 50,
+    "status": "open"
+  }
+]
+```
+
+### `POST /api/eventos`
+
+**Descrição:** Cria um novo evento.
+**Método:** POST
+**Body:**
+
+```json
+{
+  "restaurant_id": 1,
+  "title": "Nome do Evento",
+  "description": "Descrição do evento",
+  "date_time": "2025-12-31T20:00:00Z",
+  "capacity": 50,
+  "status": "open"
+}
+```
+
+### `PUT /api/eventos/:id`
+
+**Descrição:** Atualiza um evento existente.
+**Método:** PUT
+**Parâmetros:** `id` - ID do evento
+**Body:** Mesmo formato do POST
+
+### `DELETE /api/eventos/:id`
+
+**Descrição:** Remove um evento do sistema.
+**Método:** DELETE
+**Parâmetros:** `id` - ID do evento
+
+## 3. Usuários
+
+### `GET /api/usuarios`
+
+**Descrição:** Lista todos os usuários do sistema.
+**Método:** GET
+**Retorno:** Array de objetos usuário
+
+```json
+[
+  {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com",
+    "password_hash": "hash_da_senha"
+  }
+]
+```
+
+### `POST /api/usuarios`
+
+**Descrição:** Cria um novo usuário.
+**Método:** POST
+**Body:**
+
+```json
+{
+  "name": "Nome do Usuário",
+  "email": "email@exemplo.com",
+  "password": "senha123"
+}
+```
+
+### `PUT /api/usuarios/:id`
+
+**Descrição:** Atualiza um usuário existente.
+**Método:** PUT
+**Parâmetros:** `id` - ID do usuário
+**Body:** Mesmo formato do POST
+
+### `DELETE /api/usuarios/:id`
+
+**Descrição:** Remove um usuário do sistema.
+**Método:** DELETE
+**Parâmetros:** `id` - ID do usuário
+
+## 4. Reservas
+
+### `GET /api/reservas`
+
+**Descrição:** Lista todas as reservas do sistema.
+**Método:** GET
+**Retorno:** Array de objetos reserva
+
+```json
+[
+  {
+    "id": 1,
+    "user_id": 1,
+    "event_id": 1,
+    "num_guests": 4,
+    "status": "pending",
+    "created_at": "2025-01-01T10:00:00Z"
+  }
+]
+```
+
+### `POST /api/reservas`
+
+**Descrição:** Cria uma nova reserva.
+**Método:** POST
+**Body:**
+
+```json
+{
+  "user_id": 1,
+  "event_id": 1,
+  "num_guests": 4,
+  "status": "pending"
+}
+```
+
+### `PUT /api/reservas/:id`
+
+**Descrição:** Atualiza uma reserva existente.
+**Método:** PUT
+**Parâmetros:** `id` - ID da reserva
+**Body:** Mesmo formato do POST
+
+### `DELETE /api/reservas/:id`
+
+**Descrição:** Remove uma reserva do sistema.
+**Método:** DELETE
+**Parâmetros:** `id` - ID da reserva
+
+## 5. Mesas
+
+### `GET /api/mesas`
+
+**Descrição:** Lista todas as mesas cadastradas.
+**Método:** GET
+**Retorno:** Array de objetos mesa
+
+```json
+[
+  {
+    "id": 1,
+    "restaurant_id": 1,
+    "seats": 4,
+    "table_number": "Mesa 1"
+  }
+]
+```
+
+### `POST /api/mesas`
+
+**Descrição:** Cria uma nova mesa.
+**Método:** POST
+**Body:**
+
+```json
+{
+  "restaurant_id": 1,
+  "seats": 4,
+  "table_number": "Mesa 1"
+}
+```
+
+### `PUT /api/mesas/:id`
+
+**Descrição:** Atualiza uma mesa existente.
+**Método:** PUT
+**Parâmetros:** `id` - ID da mesa
+**Body:** Mesmo formato do POST
+
+### `DELETE /api/mesas/:id`
+
+**Descrição:** Remove uma mesa do sistema.
+**Método:** DELETE
+**Parâmetros:** `id` - ID da mesa
+
+## Status de Resposta
+
+- **200 OK:** Operação realizada com sucesso
+- **201 Created:** Recurso criado com sucesso
+- **404 Not Found:** Recurso não encontrado
+- **500 Internal Server Error:** Erro interno do servidor
+
+## Observações
+
+1. **Autenticação:** O sistema atual não possui autenticação implementada
+2. **Validação:** Campos marcados com `*` são obrigatórios
+3. **Relacionamentos:** As entidades estão relacionadas através de chaves estrangeiras:
+   - Eventos pertencem a Restaurantes (`restaurant_id`)
+   - Mesas pertencem a Restaurantes (`restaurant_id`)
+   - Reservas são feitas por Usuários (`user_id`) para Eventos (`event_id`)
+4. **Status dos Eventos:** `open`, `closed`, `cancelled`
+5. **Status das Reservas:** `pending`, `confirmed`, `cancelled`
+
 ### 3.7 Interface e Navegação (Semana 07)
 
 _Descreva e ilustre aqui o desenvolvimento do frontend do sistema web, explicando brevemente o que foi entregue em termos de código e sistema. Utilize prints de tela para ilustrar._
 
+Dashboard Do Sistema
+
+![dashboard](assets/prints/dashboard.png)
+
 ---
+
+Restaurantes
+
+![r](assets/prints/restaurantes.png)
+
+Registro Restaurantes
+
+![r1](assets/prints/restaurante1.png)
+
+---
+
+Eventos
+
+![e](assets/prints/eventos.png)
+Registro Eventos
+
+![e1](assets/prints/evento1.png)
+
+---
+
+Reserva
+
+![2r](assets/prints/reservas.png)
+Registro Reserva
+
+![r2](assets/prints/reserva1.png)
+
+---
+
+Mesas
+
+![m](assets/prints/mesas.png)
+Registro Mesas
+
+![m1](assets/prints/mesa1.png)
 
 ## <a name="c4"></a>4. Desenvolvimento da Aplicação Web (Semana 8)
 
