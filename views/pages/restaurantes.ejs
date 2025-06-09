@@ -1,0 +1,222 @@
+<div class="page-header">
+  <h1><i class="fas fa-store"></i> Restaurantes</h1>
+  <button class="btn btn-primary" onclick="openModal('restauranteModal')">
+    <i class="fas fa-plus"></i> Novo Restaurante
+  </button>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input
+      type="text"
+      id="searchRestaurante"
+      placeholder="Buscar restaurante..."
+    />
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Descrição</th>
+        <th>Localização</th>
+        <th>Contato</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="restaurantes-tbody">
+      <tr>
+        <td colspan="6" class="loading">Carregando restaurantes...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para criar/editar restaurante -->
+<div id="restauranteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Novo Restaurante</h3>
+      <span class="close" onclick="closeModal('restauranteModal')"
+        >&times;</span
+      >
+    </div>
+    <form id="restauranteForm">
+      <input type="hidden" id="restauranteId" />
+
+      <div class="form-group">
+        <label for="name">Nome *</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Localização</label>
+        <input type="text" id="location" name="location" />
+      </div>
+
+      <div class="form-group">
+        <label for="contact_info">Informações de Contato</label>
+        <input type="text" id="contact_info" name="contact_info" />
+      </div>
+
+      <div class="form-group">
+        <label for="owner_id">ID do Proprietário</label>
+        <input type="number" id="owner_id" name="owner_id" />
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('restauranteModal')"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let restaurantes = [];
+
+  // Carregar restaurantes
+  async function loadRestaurantes() {
+    try {
+      restaurantes = await api.get("/restaurantes");
+      renderRestaurantes(restaurantes);
+    } catch (error) {
+      console.error("Erro ao carregar restaurantes:", error);
+      utils.showNotification("Erro ao carregar restaurantes", "error");
+    }
+  }
+
+  // Renderizar tabela de restaurantes
+  function renderRestaurantes(data) {
+    const tbody = document.getElementById("restaurantes-tbody");
+
+    if (data.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="empty-state">Nenhum restaurante encontrado</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map(
+        (restaurante) => `
+        <tr>
+            <td>${restaurante.id}</td>
+            <td><strong>${restaurante.name}</strong></td>
+            <td>${restaurante.description || "-"}</td>
+            <td>${restaurante.location || "-"}</td>
+            <td>${restaurante.contact_info || "-"}</td>
+            <td class="actions">
+                <button class="btn btn-sm btn-secondary" onclick="editRestaurante(${
+                  restaurante.id
+                })">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteRestaurante(${
+                  restaurante.id
+                })">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `
+      )
+      .join("");
+  }
+
+  // Buscar restaurantes
+  document
+    .getElementById("searchRestaurante")
+    .addEventListener("input", function (e) {
+      const search = e.target.value.toLowerCase();
+      const filtered = restaurantes.filter(
+        (restaurante) =>
+          restaurante.name.toLowerCase().includes(search) ||
+          (restaurante.description &&
+            restaurante.description.toLowerCase().includes(search))
+      );
+      renderRestaurantes(filtered);
+    });
+
+  // Submeter formulário
+  document
+    .getElementById("restauranteForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const id = document.getElementById("restauranteId").value;
+
+      try {
+        if (id) {
+          await api.put(`/restaurantes/${id}`, data);
+          utils.showNotification(
+            "Restaurante atualizado com sucesso!",
+            "success"
+          );
+        } else {
+          await api.post("/restaurantes", data);
+          utils.showNotification("Restaurante criado com sucesso!", "success");
+        }
+
+        closeModal("restauranteModal");
+        loadRestaurantes();
+        e.target.reset();
+      } catch (error) {
+        console.error("Erro ao salvar restaurante:", error);
+        utils.showNotification("Erro ao salvar restaurante", "error");
+      }
+    });
+
+  // Editar restaurante
+  async function editRestaurante(id) {
+    const restaurante = restaurantes.find((r) => r.id === id);
+    if (!restaurante) return;
+
+    document.getElementById("modalTitle").textContent = "Editar Restaurante";
+    document.getElementById("restauranteId").value = id;
+    document.getElementById("name").value = restaurante.name;
+    document.getElementById("description").value =
+      restaurante.description || "";
+    document.getElementById("location").value = restaurante.location || "";
+    document.getElementById("contact_info").value =
+      restaurante.contact_info || "";
+    document.getElementById("owner_id").value = restaurante.owner_id || "";
+
+    openModal("restauranteModal");
+  }
+
+  // Deletar restaurante
+  async function deleteRestaurante(id) {
+    if (!confirm("Tem certeza que deseja excluir este restaurante?")) return;
+
+    try {
+      await api.delete(`/restaurantes/${id}`);
+      utils.showNotification("Restaurante excluído com sucesso!", "success");
+      loadRestaurantes();
+    } catch (error) {
+      console.error("Erro ao excluir restaurante:", error);
+      utils.showNotification("Erro ao excluir restaurante", "error");
+    }
+  }
+
+  // Carregar dados ao inicializar
+  document.addEventListener("DOMContentLoaded", loadRestaurantes);
+</script>

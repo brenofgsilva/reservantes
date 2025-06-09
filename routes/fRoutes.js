@@ -1,0 +1,52 @@
+const express = require("express");
+const router = express.Router();
+
+// Página inicial - Dashboard
+router.get("/", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "ReservaGo - Dashboard",
+    content: "pages/dashboard",
+  });
+});
+
+// Página de restaurantes
+router.get("/restaurantes", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "Restaurantes - ReservaGo",
+    content: "pages/restaurantes",
+  });
+});
+
+// Página de eventos
+router.get("/eventos", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "Eventos - ReservaGo",
+    content: "pages/eventos",
+  });
+});
+
+// Página de reservas
+router.get("/reservas", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "Reservas - ReservaGo",
+    content: "pages/reservas",
+  });
+});
+
+// Página de usuários
+router.get("/usuarios", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "Usuários - ReservaGo",
+    content: "pages/usuarios",
+  });
+});
+
+// Página de mesas
+router.get("/mesas", (req, res) => {
+  res.render("layout/main", {
+    pageTitle: "Mesas - ReservaGo",
+    content: "pages/mesas",
+  });
+});
+
+module.exports = router;

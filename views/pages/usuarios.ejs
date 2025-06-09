@@ -1,0 +1,213 @@
+<div class="page-header">
+  <h1><i class="fas fa-users"></i> Usuários</h1>
+  <button class="btn btn-primary" onclick="openModal('usuarioModal')">
+    <i class="fas fa-plus"></i> Novo Usuário
+  </button>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchUsuario" placeholder="Buscar usuário..." />
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="usuarios-tbody">
+      <tr>
+        <td colspan="4" class="loading">Carregando usuários...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para criar/editar usuário -->
+<div id="usuarioModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Novo Usuário</h3>
+      <span class="close" onclick="closeModal('usuarioModal')">&times;</span>
+    </div>
+    <form id="usuarioForm">
+      <input type="hidden" id="usuarioId" />
+
+      <div class="form-group">
+        <label for="name">Nome *</label>
+        <input type="text" id="name" name="name" required />
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input type="email" id="email" name="email" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Senha *</label>
+        <input type="password" id="password" name="password" required />
+        <small>Deixe em branco para manter a senha atual (ao editar)</small>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('usuarioModal')"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let usuarios = [];
+
+  // Carregar usuários
+  async function loadUsuarios() {
+    try {
+      usuarios = await api.get("/usuarios");
+      renderUsuarios(usuarios);
+    } catch (error) {
+      console.error("Erro ao carregar usuários:", error);
+      utils.showNotification("Erro ao carregar usuários", "error");
+    }
+  }
+
+  // Renderizar tabela de usuários
+  function renderUsuarios(data) {
+    const tbody = document.getElementById("usuarios-tbody");
+
+    if (data.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="4" class="empty-state">Nenhum usuário encontrado</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map(
+        (usuario) => `
+        <tr>
+            <td>${usuario.id}</td>
+            <td><strong>${usuario.name}</strong></td>
+            <td>${usuario.email}</td>
+            <td class="actions">
+                <button class="btn btn-sm btn-secondary" onclick="editUsuario(${usuario.id})">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUsuario(${usuario.id})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `
+      )
+      .join("");
+  }
+
+  // Buscar usuários
+  document
+    .getElementById("searchUsuario")
+    .addEventListener("input", function (e) {
+      const search = e.target.value.toLowerCase();
+      const filtered = usuarios.filter(
+        (usuario) =>
+          usuario.name.toLowerCase().includes(search) ||
+          usuario.email.toLowerCase().includes(search)
+      );
+      renderUsuarios(filtered);
+    });
+
+  // Submeter formulário
+  document
+    .getElementById("usuarioForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const id = document.getElementById("usuarioId").value;
+
+      // Se estiver editando e senha estiver vazia, remover do objeto
+      if (id && !data.password) {
+        delete data.password;
+      }
+
+      try {
+        if (id) {
+          await api.put(`/usuarios/${id}`, data);
+          utils.showNotification("Usuário atualizado com sucesso!", "success");
+        } else {
+          await api.post("/usuarios", data);
+          utils.showNotification("Usuário criado com sucesso!", "success");
+        }
+
+        closeModal("usuarioModal");
+        loadUsuarios();
+        e.target.reset();
+      } catch (error) {
+        console.error("Erro ao salvar usuário:", error);
+        utils.showNotification("Erro ao salvar usuário", "error");
+      }
+    });
+
+  // Editar usuário
+  async function editUsuario(id) {
+    const usuario = usuarios.find((u) => u.id === id);
+    if (!usuario) return;
+
+    document.getElementById("modalTitle").textContent = "Editar Usuário";
+    document.getElementById("usuarioId").value = id;
+    document.getElementById("name").value = usuario.name;
+    document.getElementById("email").value = usuario.email;
+    document.getElementById("password").value = "";
+    document.getElementById("password").removeAttribute("required");
+
+    openModal("usuarioModal");
+  }
+
+  // Deletar usuário
+  async function deleteUsuario(id) {
+    if (!confirm("Tem certeza que deseja excluir este usuário?")) return;
+
+    try {
+      await api.delete(`/usuarios/${id}`);
+      utils.showNotification("Usuário excluído com sucesso!", "success");
+      loadUsuarios();
+    } catch (error) {
+      console.error("Erro ao excluir usuário:", error);
+      utils.showNotification("Erro ao excluir usuário", "error");
+    }
+  }
+
+  // Reset modal ao fechar
+  function resetUsuarioModal() {
+    document.getElementById("modalTitle").textContent = "Novo Usuário";
+    document.getElementById("password").setAttribute("required", "required");
+    document.getElementById("usuarioForm").reset();
+  }
+
+  // Override da função closeModal para este modal específico
+  const originalCloseModal = window.closeModal;
+  window.closeModal = function (modalId) {
+    if (modalId === "usuarioModal") {
+      resetUsuarioModal();
+    }
+    originalCloseModal(modalId);
+  };
+
+  // Carregar dados ao inicializar
+  document.addEventListener("DOMContentLoaded", loadUsuarios);
+</script>

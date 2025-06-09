@@ -1,0 +1,263 @@
+<div class="page-header">
+  <h1><i class="fas fa-bookmark"></i> Reservas</h1>
+  <button class="btn btn-primary" onclick="openModal('reservaModal')">
+    <i class="fas fa-plus"></i> Nova Reserva
+  </button>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchReserva" placeholder="Buscar reserva..." />
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Usuário</th>
+        <th>Evento</th>
+        <th>Nº Convidados</th>
+        <th>Status</th>
+        <th>Data Criação</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="reservas-tbody">
+      <tr>
+        <td colspan="7" class="loading">Carregando reservas...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para criar/editar reserva -->
+<div id="reservaModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Nova Reserva</h3>
+      <span class="close" onclick="closeModal('reservaModal')">&times;</span>
+    </div>
+    <form id="reservaForm">
+      <input type="hidden" id="reservaId" />
+
+      <div class="form-group">
+        <label for="user_id">Usuário *</label>
+        <select id="user_id" name="user_id" required>
+          <option value="">Selecione um usuário</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="event_id">Evento *</label>
+        <select id="event_id" name="event_id" required>
+          <option value="">Selecione um evento</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="num_guests">Número de Convidados *</label>
+        <input
+          type="number"
+          id="num_guests"
+          name="num_guests"
+          min="1"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="pending">Pendente</option>
+          <option value="confirmed">Confirmada</option>
+          <option value="cancelled">Cancelada</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('reservaModal')"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let reservas = [];
+  let usuarios = [];
+  let eventos = [];
+
+  // Carregar dados iniciais
+  async function loadInitialData() {
+    try {
+      [reservas, usuarios, eventos] = await Promise.all([
+        api.get("/reservas"),
+        api.get("/usuarios"),
+        api.get("/eventos"),
+      ]);
+
+      populateSelects();
+      renderReservas(reservas);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      utils.showNotification("Erro ao carregar dados", "error");
+    }
+  }
+
+  // Popular selects
+  function populateSelects() {
+    // Popular select de usuários
+    const userSelect = document.getElementById("user_id");
+    userSelect.innerHTML = '<option value="">Selecione um usuário</option>';
+    usuarios.forEach((usuario) => {
+      const option = document.createElement("option");
+      option.value = usuario.id;
+      option.textContent = `${usuario.name} (${usuario.email})`;
+      userSelect.appendChild(option);
+    });
+
+    // Popular select de eventos
+    const eventSelect = document.getElementById("event_id");
+    eventSelect.innerHTML = '<option value="">Selecione um evento</option>';
+    eventos.forEach((evento) => {
+      const option = document.createElement("option");
+      option.value = evento.id;
+      option.textContent = `${evento.title} - ${utils.formatDate(
+        evento.date_time
+      )}`;
+      eventSelect.appendChild(option);
+    });
+  }
+
+  // Renderizar tabela de reservas
+  function renderReservas(data) {
+    const tbody = document.getElementById("reservas-tbody");
+
+    if (data.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="empty-state">Nenhuma reserva encontrada</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map((reserva) => {
+        const usuario = usuarios.find((u) => u.id === reserva.user_id);
+        const evento = eventos.find((e) => e.id === reserva.event_id);
+
+        return `
+            <tr>
+                <td>${reserva.id}</td>
+                <td>${usuario ? usuario.name : "N/A"}</td>
+                <td>${evento ? evento.title : "N/A"}</td>
+                <td>${reserva.num_guests}</td>
+                <td><span class="status status-${
+                  reserva.status
+                }">${utils.capitalize(reserva.status)}</span></td>
+                <td>${utils.formatDate(reserva.created_at)}</td>
+                <td class="actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editReserva(${
+                      reserva.id
+                    })">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteReserva(${
+                      reserva.id
+                    })">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+      })
+      .join("");
+  }
+
+  // Buscar reservas
+  document
+    .getElementById("searchReserva")
+    .addEventListener("input", function (e) {
+      const search = e.target.value.toLowerCase();
+      const filtered = reservas.filter((reserva) => {
+        const usuario = usuarios.find((u) => u.id === reserva.user_id);
+        const evento = eventos.find((e) => e.id === reserva.event_id);
+
+        return (
+          (usuario && usuario.name.toLowerCase().includes(search)) ||
+          (evento && evento.title.toLowerCase().includes(search)) ||
+          reserva.status.toLowerCase().includes(search)
+        );
+      });
+      renderReservas(filtered);
+    });
+
+  // Submeter formulário
+  document
+    .getElementById("reservaForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const id = document.getElementById("reservaId").value;
+
+      try {
+        if (id) {
+          await api.put(`/reservas/${id}`, data);
+          utils.showNotification("Reserva atualizada com sucesso!", "success");
+        } else {
+          await api.post("/reservas", data);
+          utils.showNotification("Reserva criada com sucesso!", "success");
+        }
+
+        closeModal("reservaModal");
+        loadInitialData();
+        e.target.reset();
+      } catch (error) {
+        console.error("Erro ao salvar reserva:", error);
+        utils.showNotification("Erro ao salvar reserva", "error");
+      }
+    });
+
+  // Editar reserva
+  async function editReserva(id) {
+    const reserva = reservas.find((r) => r.id === id);
+    if (!reserva) return;
+
+    document.getElementById("modalTitle").textContent = "Editar Reserva";
+    document.getElementById("reservaId").value = id;
+    document.getElementById("user_id").value = reserva.user_id;
+    document.getElementById("event_id").value = reserva.event_id;
+    document.getElementById("num_guests").value = reserva.num_guests;
+    document.getElementById("status").value = reserva.status;
+
+    openModal("reservaModal");
+  }
+
+  // Deletar reserva
+  async function deleteReserva(id) {
+    if (!confirm("Tem certeza que deseja excluir esta reserva?")) return;
+
+    try {
+      await api.delete(`/reservas/${id}`);
+      utils.showNotification("Reserva excluída com sucesso!", "success");
+      loadInitialData();
+    } catch (error) {
+      console.error("Erro ao excluir reserva:", error);
+      utils.showNotification("Erro ao excluir reserva", "error");
+    }
+  }
+
+  // Carregar dados ao inicializar
+  document.addEventListener("DOMContentLoaded", loadInitialData);
+</script>

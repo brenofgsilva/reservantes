@@ -1,0 +1,236 @@
+<div class="page-header">
+  <h1><i class="fas fa-table"></i> Mesas</h1>
+  <button class="btn btn-primary" onclick="openModal('mesaModal')">
+    <i class="fas fa-plus"></i> Nova Mesa
+  </button>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchMesa" placeholder="Buscar mesa..." />
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Restaurante</th>
+        <th>Número da Mesa</th>
+        <th>Assentos</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="mesas-tbody">
+      <tr>
+        <td colspan="5" class="loading">Carregando mesas...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para criar/editar mesa -->
+<div id="mesaModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Nova Mesa</h3>
+      <span class="close" onclick="closeModal('mesaModal')">&times;</span>
+    </div>
+    <form id="mesaForm">
+      <input type="hidden" id="mesaId" />
+
+      <div class="form-group">
+        <label for="restaurant_id">Restaurante *</label>
+        <select id="restaurant_id" name="restaurant_id" required>
+          <option value="">Selecione um restaurante</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="table_number">Número da Mesa</label>
+        <input
+          type="text"
+          id="table_number"
+          name="table_number"
+          placeholder="Ex: Mesa 1, A1, etc."
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="seats">Número de Assentos *</label>
+        <input
+          type="number"
+          id="seats"
+          name="seats"
+          min="1"
+          max="20"
+          required
+        />
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('mesaModal')"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let mesas = [];
+  let restaurantes = [];
+
+  // Carregar dados iniciais
+  async function loadInitialData() {
+    try {
+      [mesas, restaurantes] = await Promise.all([
+        api.get("/mesas"),
+        api.get("/restaurantes"),
+      ]);
+
+      populateRestaurantSelect();
+      renderMesas(mesas);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      utils.showNotification("Erro ao carregar dados", "error");
+    }
+  }
+
+  // Popular select de restaurantes
+  function populateRestaurantSelect() {
+    const select = document.getElementById("restaurant_id");
+    select.innerHTML = '<option value="">Selecione um restaurante</option>';
+
+    restaurantes.forEach((restaurante) => {
+      const option = document.createElement("option");
+      option.value = restaurante.id;
+      option.textContent = restaurante.name;
+      select.appendChild(option);
+    });
+  }
+
+  // Renderizar tabela de mesas
+  function renderMesas(data) {
+    const tbody = document.getElementById("mesas-tbody");
+
+    if (data.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="5" class="empty-state">Nenhuma mesa encontrada</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map((mesa) => {
+        const restaurante = restaurantes.find(
+          (r) => r.id === mesa.restaurant_id
+        );
+        return `
+            <tr>
+                <td>${mesa.id}</td>
+                <td>${restaurante ? restaurante.name : "N/A"}</td>
+                <td><strong>${
+                  mesa.table_number || `Mesa ${mesa.id}`
+                }</strong></td>
+                <td>${mesa.seats} assentos</td>
+                <td class="actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editMesa(${
+                      mesa.id
+                    })">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteMesa(${
+                      mesa.id
+                    })">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+      })
+      .join("");
+  }
+
+  // Buscar mesas
+  document.getElementById("searchMesa").addEventListener("input", function (e) {
+    const search = e.target.value.toLowerCase();
+    const filtered = mesas.filter((mesa) => {
+      const restaurante = restaurantes.find((r) => r.id === mesa.restaurant_id);
+      return (
+        (mesa.table_number &&
+          mesa.table_number.toLowerCase().includes(search)) ||
+        (restaurante && restaurante.name.toLowerCase().includes(search)) ||
+        mesa.seats.toString().includes(search)
+      );
+    });
+    renderMesas(filtered);
+  });
+
+  // Submeter formulário
+  document
+    .getElementById("mesaForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const id = document.getElementById("mesaId").value;
+
+      try {
+        if (id) {
+          await api.put(`/mesas/${id}`, data);
+          utils.showNotification("Mesa atualizada com sucesso!", "success");
+        } else {
+          await api.post("/mesas", data);
+          utils.showNotification("Mesa criada com sucesso!", "success");
+        }
+
+        closeModal("mesaModal");
+        loadInitialData();
+        e.target.reset();
+      } catch (error) {
+        console.error("Erro ao salvar mesa:", error);
+        utils.showNotification("Erro ao salvar mesa", "error");
+      }
+    });
+
+  // Editar mesa
+  async function editMesa(id) {
+    const mesa = mesas.find((m) => m.id === id);
+    if (!mesa) return;
+
+    document.getElementById("modalTitle").textContent = "Editar Mesa";
+    document.getElementById("mesaId").value = id;
+    document.getElementById("restaurant_id").value = mesa.restaurant_id;
+    document.getElementById("table_number").value = mesa.table_number || "";
+    document.getElementById("seats").value = mesa.seats;
+
+    openModal("mesaModal");
+  }
+
+  // Deletar mesa
+  async function deleteMesa(id) {
+    if (!confirm("Tem certeza que deseja excluir esta mesa?")) return;
+
+    try {
+      await api.delete(`/mesas/${id}`);
+      utils.showNotification("Mesa excluída com sucesso!", "success");
+      loadInitialData();
+    } catch (error) {
+      console.error("Erro ao excluir mesa:", error);
+      utils.showNotification("Erro ao excluir mesa", "error");
+    }
+  }
+
+  // Carregar dados ao inicializar
+  document.addEventListener("DOMContentLoaded", loadInitialData);
+</script>

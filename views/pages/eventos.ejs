@@ -1,0 +1,251 @@
+<div class="page-header">
+  <h1><i class="fas fa-calendar"></i> Eventos</h1>
+  <button class="btn btn-primary" onclick="openModal('eventoModal')">
+    <i class="fas fa-plus"></i> Novo Evento
+  </button>
+</div>
+
+<div class="filters">
+  <div class="search-box">
+    <i class="fas fa-search"></i>
+    <input type="text" id="searchEvento" placeholder="Buscar evento..." />
+  </div>
+</div>
+
+<div class="table-container">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Título</th>
+        <th>Restaurante</th>
+        <th>Data/Hora</th>
+        <th>Capacidade</th>
+        <th>Status</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody id="eventos-tbody">
+      <tr>
+        <td colspan="7" class="loading">Carregando eventos...</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal para criar/editar evento -->
+<div id="eventoModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modalTitle">Novo Evento</h3>
+      <span class="close" onclick="closeModal('eventoModal')">&times;</span>
+    </div>
+    <form id="eventoForm">
+      <input type="hidden" id="eventoId" />
+
+      <div class="form-group">
+        <label for="restaurant_id">Restaurante *</label>
+        <select id="restaurant_id" name="restaurant_id" required>
+          <option value="">Selecione um restaurante</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="title">Título *</label>
+        <input type="text" id="title" name="title" required />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descrição</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="date_time">Data e Hora *</label>
+        <input type="datetime-local" id="date_time" name="date_time" required />
+      </div>
+
+      <div class="form-group">
+        <label for="capacity">Capacidade *</label>
+        <input type="number" id="capacity" name="capacity" min="1" required />
+      </div>
+
+      <div class="form-group">
+        <label for="status">Status</label>
+        <select id="status" name="status">
+          <option value="open">Aberto</option>
+          <option value="closed">Fechado</option>
+          <option value="cancelled">Cancelado</option>
+        </select>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          onclick="closeModal('eventoModal')"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary">
+          <i class="fas fa-save"></i> Salvar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  let eventos = [];
+  let restaurantes = [];
+
+  // Carregar dados iniciais
+  async function loadInitialData() {
+    try {
+      [eventos, restaurantes] = await Promise.all([
+        api.get("/eventos"),
+        api.get("/restaurantes"),
+      ]);
+
+      populateRestaurantSelect();
+      renderEventos(eventos);
+    } catch (error) {
+      console.error("Erro ao carregar dados:", error);
+      utils.showNotification("Erro ao carregar dados", "error");
+    }
+  }
+
+  // Popular select de restaurantes
+  function populateRestaurantSelect() {
+    const select = document.getElementById("restaurant_id");
+    select.innerHTML = '<option value="">Selecione um restaurante</option>';
+
+    restaurantes.forEach((restaurante) => {
+      const option = document.createElement("option");
+      option.value = restaurante.id;
+      option.textContent = restaurante.name;
+      select.appendChild(option);
+    });
+  }
+
+  // Renderizar tabela de eventos
+  function renderEventos(data) {
+    const tbody = document.getElementById("eventos-tbody");
+
+    if (data.length === 0) {
+      tbody.innerHTML =
+        '<tr><td colspan="7" class="empty-state">Nenhum evento encontrado</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data
+      .map((evento) => {
+        const restaurante = restaurantes.find(
+          (r) => r.id === evento.restaurant_id
+        );
+        return `
+            <tr>
+                <td>${evento.id}</td>
+                <td><strong>${evento.title}</strong></td>
+                <td>${restaurante ? restaurante.name : "N/A"}</td>
+                <td>${utils.formatDate(evento.date_time)}</td>
+                <td>${evento.capacity} pessoas</td>
+                <td><span class="status status-${
+                  evento.status
+                }">${utils.capitalize(evento.status)}</span></td>
+                <td class="actions">
+                    <button class="btn btn-sm btn-secondary" onclick="editEvento(${
+                      evento.id
+                    })">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteEvento(${
+                      evento.id
+                    })">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+      })
+      .join("");
+  }
+
+  // Buscar eventos
+  document
+    .getElementById("searchEvento")
+    .addEventListener("input", function (e) {
+      const search = e.target.value.toLowerCase();
+      const filtered = eventos.filter(
+        (evento) =>
+          evento.title.toLowerCase().includes(search) ||
+          (evento.description &&
+            evento.description.toLowerCase().includes(search))
+      );
+      renderEventos(filtered);
+    });
+
+  // Submeter formulário
+  document
+    .getElementById("eventoForm")
+    .addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData.entries());
+      const id = document.getElementById("eventoId").value;
+
+      try {
+        if (id) {
+          await api.put(`/eventos/${id}`, data);
+          utils.showNotification("Evento atualizado com sucesso!", "success");
+        } else {
+          await api.post("/eventos", data);
+          utils.showNotification("Evento criado com sucesso!", "success");
+        }
+
+        closeModal("eventoModal");
+        loadInitialData();
+        e.target.reset();
+      } catch (error) {
+        console.error("Erro ao salvar evento:", error);
+        utils.showNotification("Erro ao salvar evento", "error");
+      }
+    });
+
+  // Editar evento
+  async function editEvento(id) {
+    const evento = eventos.find((e) => e.id === id);
+    if (!evento) return;
+
+    document.getElementById("modalTitle").textContent = "Editar Evento";
+    document.getElementById("eventoId").value = id;
+    document.getElementById("restaurant_id").value = evento.restaurant_id;
+    document.getElementById("title").value = evento.title;
+    document.getElementById("description").value = evento.description || "";
+    document.getElementById("date_time").value = utils.toDateTimeLocal(
+      evento.date_time
+    );
+    document.getElementById("capacity").value = evento.capacity;
+    document.getElementById("status").value = evento.status;
+
+    openModal("eventoModal");
+  }
+
+  // Deletar evento
+  async function deleteEvento(id) {
+    if (!confirm("Tem certeza que deseja excluir este evento?")) return;
+
+    try {
+      await api.delete(`/eventos/${id}`);
+      utils.showNotification("Evento excluído com sucesso!", "success");
+      loadInitialData();
+    } catch (error) {
+      console.error("Erro ao excluir evento:", error);
+      utils.showNotification("Erro ao excluir evento", "error");
+    }
+  }
+
+  // Carregar dados ao inicializar
+  document.addEventListener("DOMContentLoaded", loadInitialData);
+</script>
