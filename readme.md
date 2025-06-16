@@ -10,7 +10,7 @@
 
 - <a href="https://github.com/brenofgsilva">Breno Farias Gomes da Silva</a>
 
-## :teacher: Professores:
+## Professores:
 
 ### Orientador(a)
 
@@ -28,7 +28,7 @@
 
 ## 📝 Link de demonstração
 
-_Coloque aqui o link para seu projeto publicado e link para vídeo de demonstração_
+[Reservago](https://drive.google.com/drive/folders/1mzE8AwAeNJaKzKIKydYOlkXwjU2sN9Ys)
 
 ## 📁 Estrutura de pastas
 
