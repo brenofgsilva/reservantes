@@ -59,6 +59,39 @@ body {
   align-items: center;
   gap: 0.5rem;
   font-size: 1.1rem;
+  position: relative;
+  cursor: pointer;
+}
+
+.user-menu:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  min-width: 160px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  z-index: 1000;
+  overflow: hidden;
+  margin-top: 1rem;
+}
+
+.dropdown-menu a {
+  color: #4b5563;
+  padding: 0.75rem 1rem;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f1f5f9;
+  color: #3b82f6;
 }
 
 /* Container principal */

@@ -1,5 +1,21 @@
 const express = require("express");
 const router = express.Router();
+const { redirectIfAuthenticated } = require("../middlewares/auth");
+
+// Páginas de autenticação (renderização direta)
+router.get("/login", redirectIfAuthenticated, (req, res) => {
+  res.render("auth/login", {
+    pageTitle: "Login - ReservaGo",
+    layout: "auth/layout",
+  });
+});
+
+router.get("/register", redirectIfAuthenticated, (req, res) => {
+  res.render("auth/register", {
+    pageTitle: "Registro - ReservaGo",
+    layout: "auth/layout",
+  });
+});
 
 // Página inicial - Dashboard
 router.get("/", (req, res) => {

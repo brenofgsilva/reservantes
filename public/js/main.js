@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Configurar validação de formulários
   setupFormValidation();
+
+  // Configurar menu de usuário
+  setupUserMenu();
 });
 
 // Marcar link ativo na navegação
@@ -121,3 +124,26 @@ document.addEventListener("submit", function (e) {
     }, 3000);
   }
 });
+
+// Configurar menu de usuário
+function setupUserMenu() {
+  const userMenu = document.querySelector(".user-menu");
+
+  if (userMenu) {
+    userMenu.addEventListener("click", function (e) {
+      const dropdown = this.querySelector(".dropdown-menu");
+      dropdown.style.display =
+        dropdown.style.display === "block" ? "none" : "block";
+
+      // Fechar o menu ao clicar em qualquer lugar
+      document.addEventListener("click", function closeMenu(event) {
+        if (!userMenu.contains(event.target)) {
+          dropdown.style.display = "none";
+          document.removeEventListener("click", closeMenu);
+        }
+      });
+
+      e.stopPropagation();
+    });
+  }
+}

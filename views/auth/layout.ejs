@@ -1,0 +1,42 @@
+<!-- views/auth/layout.ejs -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= pageTitle %></title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="auth-body">
+    <div class="auth-container">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo">
+            <i class="fas fa-utensils"></i>
+            <h1>ReservaGo</h1>
+          </div>
+          <p class="tagline">Sistema de Gestão de Reservas</p>
+        </div>
+
+        <div class="auth-content"><%- body %></div>
+
+        <div class="auth-footer">
+          <p>&copy; 2025 ReservaGo. Todos os direitos reservados.</p>
+        </div>
+      </div>
+
+      <div class="auth-background">
+        <div class="auth-overlay"></div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
+</html>
